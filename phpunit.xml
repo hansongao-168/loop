@@ -32,5 +32,12 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- Pin behavior-relevant feature flags so tests never depend on
+             the developer's local .env. -->
+        <env name="GRAPH_RAG_ENABLED" value="false"/>
+        <env name="GRAPH_RAG_SEMANTIC_ENTITY_RESOLUTION" value="false"/>
+        <env name="GRAPH_RAG_COMMUNITY_LEVELS" value="2"/>
+        <env name="LOOP_DEFAULT_STRATEGY" value="failover"/>
+        <env name="LOOP_RECORD" value="true"/>
     </php>
 </phpunit>

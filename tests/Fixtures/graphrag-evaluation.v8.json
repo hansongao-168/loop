@@ -1,0 +1,151 @@
+{
+  "name": "loop-rag-baseline-v7-expanded",
+  "knowledge_base_id": 6,
+  "cases": [
+    {
+      "id": "local-relationship-1",
+      "question": "Alice 在哪家公司工作？",
+      "mode": "local",
+      "expected_mode": "local",
+      "answerable": true,
+      "expected_answer_contains": [
+        "Alice"
+      ],
+      "top_k": 5,
+      "expected_sources": [
+        "人员关系文档"
+      ]
+    },
+    {
+      "id": "global-theme-1",
+      "question": "这个知识库有哪些主要主题？",
+      "mode": "global",
+      "expected_mode": "global",
+      "answerable": true,
+      "community_top_k": 5,
+      "top_k": 10,
+      "expected_sources": [
+        "人员关系文档",
+        "项目说明"
+      ]
+    },
+    {
+      "id": "local-multihop-1",
+      "question": "Nebula 云平台的技术负责人在哪家公司工作？",
+      "mode": "local",
+      "expected_mode": "local",
+      "answerable": true,
+      "expected_answer_contains": [
+        "Acme"
+      ],
+      "top_k": 5,
+      "max_hops": 2,
+      "expected_sources": [
+        "项目说明"
+      ]
+    },
+    {
+      "id": "abstention-1",
+      "question": "Acme 公司的竞争对手是谁？",
+      "mode": "auto",
+      "answerable": false,
+      "top_k": 5
+    },
+    {
+      "id": "direct-location-1",
+      "question": "Acme 公司位于哪座城市？",
+      "mode": "local",
+      "expected_mode": "local",
+      "answerable": true,
+      "expected_answer_contains": [
+        "北京"
+      ],
+      "top_k": 5,
+      "expected_sources": [
+        "人员关系文档",
+        "公司沿革"
+      ]
+    },
+    {
+      "id": "direct-role-1",
+      "question": "Alice 在 Acme 担任什么职位？",
+      "mode": "local",
+      "expected_mode": "local",
+      "answerable": true,
+      "expected_answer_contains": [
+        "工程师"
+      ],
+      "top_k": 5,
+      "expected_sources": [
+        "人员关系文档"
+      ]
+    },
+    {
+      "id": "numeric-revenue-1",
+      "question": "Acme 2023 年的营收是多少？",
+      "mode": "auto",
+      "answerable": true,
+      "expected_answer_contains": [
+        "亿"
+      ],
+      "top_k": 5,
+      "expected_sources": [
+        "公司沿革"
+      ]
+    },
+    {
+      "id": "numeric-founded-1",
+      "question": "Acme 是哪一年成立的？",
+      "mode": "auto",
+      "answerable": true,
+      "expected_answer_contains": [
+        "2015"
+      ],
+      "top_k": 5,
+      "expected_sources": [
+        "公司沿革"
+      ]
+    },
+    {
+      "id": "local-multihop-2",
+      "question": "Nebula 云平台由哪家公司开发？",
+      "mode": "local",
+      "expected_mode": "local",
+      "answerable": true,
+      "expected_answer_contains": [
+        "Acme"
+      ],
+      "top_k": 5,
+      "max_hops": 2,
+      "expected_sources": [
+        "项目说明"
+      ]
+    },
+    {
+      "id": "global-orgs-1",
+      "question": "知识库中提到了哪些组织机构？",
+      "mode": "global",
+      "expected_mode": "global",
+      "answerable": true,
+      "community_top_k": 5,
+      "top_k": 10,
+      "expected_answer_contains": [
+        "Acme"
+      ]
+    },
+    {
+      "id": "abstention-2",
+      "question": "Acme 的 CEO 是谁？",
+      "mode": "auto",
+      "answerable": false,
+      "top_k": 5
+    },
+    {
+      "id": "abstention-3",
+      "question": "Bob 的邮箱是什么？",
+      "mode": "auto",
+      "answerable": false,
+      "top_k": 5
+    }
+  ]
+}
