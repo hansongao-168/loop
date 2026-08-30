@@ -1,3 +1,5 @@
+[![CI](https://github.com/hansongao-168/loop/actions/workflows/ci.yml/badge.svg)](https://github.com/hansongao-168/loop/actions/workflows/ci.yml)
+
 # Loop RAG AI Server
 
 面向多个业务项目的统一 AI 网关，基于 Laravel 13、PHP 8.5 和 Homebrew Apache。LLM 使用本机原生 Ollama，不使用 Docker。
