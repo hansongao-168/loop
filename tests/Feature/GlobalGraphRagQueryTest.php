@@ -313,6 +313,7 @@ class GlobalGraphRagQueryTest extends TestCase
         ])->assertOk()
             ->assertJsonPath('communities.0.level', 0);
     }
+
     public function test_rebuild_reuses_cached_summaries_without_model_calls(): void
     {
         $knowledgeBase = $this->createTwoCommunityGraph();
