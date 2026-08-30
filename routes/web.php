@@ -15,6 +15,9 @@ Route::prefix('admin')->middleware('admin.auth')->name('admin.')->group(function
     Route::post('/knowledge-bases', [KnowledgeController::class, 'storeBase'])->name('bases.store');
     Route::get('/knowledge-bases/{knowledgeBase}', [KnowledgeController::class, 'show'])->name('bases.show');
     Route::post('/knowledge-bases/{knowledgeBase}/documents', [KnowledgeController::class, 'ingest'])->name('documents.store');
+    Route::post('/documents/{document}/retry', [KnowledgeController::class, 'retryDocument'])->name('documents.retry');
     Route::delete('/documents/{document}', [KnowledgeController::class, 'destroyDocument'])->name('documents.destroy');
     Route::post('/knowledge-bases/{knowledgeBase}/query', [KnowledgeController::class, 'query'])->name('query');
+    Route::post('/knowledge-bases/{knowledgeBase}/communities/rebuild', [KnowledgeController::class, 'rebuildCommunities'])->name('communities.rebuild');
+    Route::get('/knowledge-bases/{knowledgeBase}/entities/{entity}', [KnowledgeController::class, 'entity'])->name('entities.show');
 });

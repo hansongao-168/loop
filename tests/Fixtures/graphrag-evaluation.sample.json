@@ -1,0 +1,26 @@
+{
+  "name": "loop-rag-sample",
+  "knowledge_base_id": 1,
+  "cases": [
+    {
+      "id": "local-relationship-1",
+      "question": "Alice 在哪家公司工作？",
+      "mode": "local",
+      "expected_mode": "local",
+      "answerable": true,
+      "expected_answer_contains": ["Alice"],
+      "top_k": 5,
+      "expected_sources": ["人员关系文档"]
+    },
+    {
+      "id": "global-theme-1",
+      "question": "这个知识库有哪些主要主题？",
+      "mode": "global",
+      "expected_mode": "global",
+      "answerable": true,
+      "community_top_k": 5,
+      "top_k": 10,
+      "expected_sources": ["人员关系文档", "项目说明"]
+    }
+  ]
+}

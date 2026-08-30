@@ -8,8 +8,25 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Document extends Model
 {
-    protected $fillable = ['knowledge_base_id', 'title', 'source', 'metadata', 'status'];
-    protected function casts(): array { return ['metadata' => 'array']; }
-    public function knowledgeBase(): BelongsTo { return $this->belongsTo(KnowledgeBase::class); }
-    public function chunks(): HasMany { return $this->hasMany(DocumentChunk::class); }
+    protected $hidden = ['source_content'];
+
+    protected $fillable = [
+        'knowledge_base_id', 'title', 'source', 'metadata', 'source_content', 'status',
+        'index_version', 'indexed_at', 'failure_reason',
+    ];
+
+    protected function casts(): array
+    {
+        return ['metadata' => 'array', 'indexed_at' => 'datetime'];
+    }
+
+    public function knowledgeBase(): BelongsTo
+    {
+        return $this->belongsTo(KnowledgeBase::class);
+    }
+
+    public function chunks(): HasMany
+    {
+        return $this->hasMany(DocumentChunk::class);
+    }
 }
