@@ -16,7 +16,9 @@ class TextChunker
 
         while ($offset < $length) {
             $chunk = trim(mb_substr($text, $offset, $size));
-            if ($chunk !== '') $chunks[] = $chunk;
+            if ($chunk !== '') {
+                $chunks[] = $chunk;
+            }
             $offset += $size - $overlap;
         }
 
