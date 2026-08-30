@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnsureAdminAuthenticated;
+use App\Http\Middleware\EnsureAiApiKey;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -14,8 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'ai.key' => \App\Http\Middleware\EnsureAiApiKey::class,
-            'admin.auth' => \App\Http\Middleware\EnsureAdminAuthenticated::class,
+            'ai.key' => EnsureAiApiKey::class,
+            'admin.auth' => EnsureAdminAuthenticated::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
