@@ -37,7 +37,7 @@
 - 已增加调度器自动化：`schedule:run` 驱动每分钟队列消化（文档索引、社区构建无需常驻 worker）与每 5 分钟 provider 健康探测。
 - 架构重构收尾：原 `AiClient` 兼容层已删除，所有 AI 调用方（抽取、消歧、社区、重排、索引、查询）直接注入 `LoopRouter` 并按 task 路由（embed/extract/summary/rerank/answer）；原 `RagService` 拆分为 `DocumentIngestor`（入库/重试）、`DocumentIndexer`（索引管线）与 `RagQueryService`（检索与问答）。
 
-开发计划所列功能已全部实施，Leiden 精细化阶段亦已落地。后续演进方向：社区摘要的按层增量失效、基于实测阈值迁移 PostgreSQL/pgvector 与图数据库。
+开发计划所列功能已全部实施，Leiden 精细化阶段亦已落地。后续演进方向：基于实测阈值迁移 PostgreSQL/pgvector 与图数据库。
 
 ## 2. 当前基线
 

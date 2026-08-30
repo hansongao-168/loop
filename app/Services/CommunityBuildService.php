@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\GraphCommunityCache;
 use App\Models\GraphRelationship;
 use App\Models\KnowledgeBase;
 use App\Services\Ai\LoopRouter;
@@ -61,19 +62,44 @@ class CommunityBuildService
                 $facts = $componentRelationships->flatMap(fn (GraphRelationship $relationship) => $relationship->evidence->pluck('statement')
                 )->unique()->take(30)->values()->all();
                 $entityNames = $componentEntities->pluck('canonical_name')->all();
-                $summary = $this->summarize($entityNames, $facts);
+
+                // Content-addressed summary cache: a community whose
+                // level, members and relationship weights are unchanged
+                // reuses its previous summary and embedding verbatim —
+                // incremental graph edits then only pay model calls for
+                // the communities they actually touched.
+                $signature = $this->communitySignature($level, $entityIds, $componentRelationships, count($facts));
+                $cached = GraphCommunityCache::query()
+                    ->where('knowledge_base_id', $knowledgeBase->id)
+                    ->where('signature', $signature)
+                    ->first();
+                if ($cached !== null) {
+                    $cached->touch();
+                    $title = $cached->title;
+                    $summaryText = $cached->summary;
+                    $embedding = $cached->embedding;
+                } else {
+                    $summary = $this->summarize($entityNames, $facts);
+                    $title = $summary['title'];
+                    $summaryText = $summary['summary'];
+                    $embedding = $this->loop->embed($summaryText, null, [
+                        'task' => 'embed',
+                        'knowledge_base_id' => $knowledgeBase->id,
+                    ])->vector;
+                    GraphCommunityCache::query()->updateOrCreate(
+                        ['knowledge_base_id' => $knowledgeBase->id, 'signature' => $signature],
+                        ['title' => $title, 'summary' => $summaryText, 'embedding' => $embedding],
+                    );
+                }
 
                 $prepared[] = [
                     'level' => $level,
                     'entity_ids' => $entityIds,
                     'membership' => $this->membershipScores($entityIds, $componentRelationships, $relationships),
-                    'title' => $summary['title'],
-                    'summary' => $summary['summary'],
+                    'title' => $title,
+                    'summary' => $summaryText,
                     'rank' => count($entityIds) + $componentRelationships->count(),
-                    'embedding' => $this->loop->embed($summary['summary'], null, [
-                        'task' => 'embed',
-                        'knowledge_base_id' => $knowledgeBase->id,
-                    ])->vector,
+                    'embedding' => $embedding,
                     'metadata' => [
                         'entities_count' => count($entityIds),
                         'relationships_count' => $componentRelationships->count(),
@@ -120,6 +146,30 @@ class CommunityBuildService
             'communities' => count($prepared),
             'levels' => count($partitions),
         ];
+    }
+
+    /**
+     * Fingerprint of everything the summary is derived from: level,
+     * member entity ids, relationship ids with weights, and the evidence
+     * volume. A rebuild that recomputes the same fingerprint can safely
+     * reuse the cached summary — identical inputs, identical output.
+     *
+     * @param  list<int>  $entityIds  sorted member ids
+     */
+    private function communitySignature(int $level, array $entityIds, iterable $relationships, int $evidenceCount): string
+    {
+        $edges = [];
+        foreach ($relationships as $relationship) {
+            $edges[] = $relationship->id.':'.max((float) $relationship->weight, 0.001);
+        }
+        sort($edges);
+
+        return hash('sha256', implode('|', [
+            $level,
+            implode(',', $entityIds),
+            implode(',', $edges),
+            $evidenceCount,
+        ]));
     }
 
     /**

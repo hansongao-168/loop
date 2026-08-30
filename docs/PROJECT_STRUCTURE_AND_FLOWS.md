@@ -232,7 +232,7 @@ Local 模式从问题中的实体名或别名确定种子，进行受节点数�
 
 设置 `GRAPH_RAG_SEMANTIC_ENTITY_RESOLUTION=true` 后，新实体会保存由名称、类型和描述生成的向量。名称及唯一别名无法确定匹配时，系统仅比较同知识库、同类型候选；最高相似度必须同时达到绝对阈值，并领先第二名指定差距才会合并。未达到任一条件时创建独立实体。该功能会为新实体增加 Embedding 调用，默认关闭。
 
-Global 模式使用版本化社区摘要进行主题级召回，并把社区中的关系证据切片加入 RRF。社区算法为确定性 Leiden 式模度优化（`CommunityDetectionService`，局部移动 + 精细化（保证社区内部连通）+ 图凝聚，可重复执行结果一致）：`GRAPH_RAG_COMMUNITY_LEVELS`（默认 2）控制层级深度，level 0 为最细划分，更高层级凝聚出更粗的主题社区；不连通的分簇永不合并，凝聚不再产生新分组时提前收敛。成员记录 `membership_score`（社区内关系权重份额），高层社区在 metadata 的 `parent_communities` 中记录被凝聚的低层社区。Global 检索返回社区 `level`，相关性平序时优先细粒度层级。社区必须通过以下接口显式重建：
+Global 模式使用版本化社区摘要进行主题级召回，并把社区中的关系证据切片加入 RRF。社区算法为确定性 Leiden 式模度优化（`CommunityDetectionService`，局部移动 + 精细化（保证社区内部连通）+ 图凝聚，可重复执行结果一致）：`GRAPH_RAG_COMMUNITY_LEVELS`（默认 2）控制层级深度，level 0 为最细划分，更高层级凝聚出更粗的主题社区；不连通的分簇永不合并，凝聚不再产生新分组时提前收敛。成员记录 `membership_score`（社区内关系权重份额），高层社区在 metadata 的 `parent_communities` 中记录被凝聚的低层社区。社区摘要带内容寻址缓存（`graph_community_cache`，按层级+成员+关系权重指纹命中复用，实测暖缓存重建零模型调用）。Global 检索返回社区 `level`，相关性平序时优先细粒度层级。社区必须通过以下接口显式重建：
 
 ```http
 POST /api/knowledge-bases/{knowledgeBase}/graph/rebuild-communities

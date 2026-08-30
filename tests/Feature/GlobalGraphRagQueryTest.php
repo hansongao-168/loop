@@ -313,4 +313,63 @@ class GlobalGraphRagQueryTest extends TestCase
         ])->assertOk()
             ->assertJsonPath('communities.0.level', 0);
     }
+    public function test_rebuild_reuses_cached_summaries_without_model_calls(): void
+    {
+        $knowledgeBase = $this->createTwoCommunityGraph();
+
+        app(CommunityBuildService::class)->rebuild($knowledgeBase);
+        $chatCalls = $this->chatCallCount();
+        $this->assertSame(2, $chatCalls);
+        $firstTitles = $knowledgeBase->graphCommunities()->pluck('title')->all();
+
+        // Unchanged graph: both communities hit the content-addressed
+        // cache, so the second rebuild performs zero model calls yet
+        // still restores identical communities under a new version.
+        app(CommunityBuildService::class)->rebuild($knowledgeBase);
+
+        $this->assertSame($chatCalls, $this->chatCallCount(), 'cached communities must not re-summarize');
+        $this->assertEqualsCanonicalizing($firstTitles, $knowledgeBase->graphCommunities()->pluck('title')->all());
+        $this->assertSame(2, $knowledgeBase->graphCommunities()->count());
+    }
+
+    public function test_graph_change_only_regenerates_the_affected_community(): void
+    {
+        $knowledgeBase = $this->createTwoCommunityGraph();
+
+        app(CommunityBuildService::class)->rebuild($knowledgeBase);
+        $this->assertSame(2, $this->chatCallCount());
+        $beforeTitles = $knowledgeBase->graphCommunities()->pluck('title')->all();
+
+        // A new disconnected component appears and the graph version
+        // moves; its singleton community is new, while the two existing
+        // communities keep their members and edges, so only the new
+        // community may be summarized again.
+        $document = $knowledgeBase->documents()->create(['title' => 'Gamma doc', 'status' => 'ready']);
+        $chunk = $document->chunks()->create(['position' => 0, 'content' => 'Gamma exists.', 'embedding' => [1, 0]]);
+        app(GraphRepository::class)->storeChunkGraph($chunk, [
+            'entities' => [['key' => 'g', 'name' => 'Gamma', 'type' => 'Organization', 'description' => null, 'aliases' => []]],
+            'relationships' => [],
+        ]);
+        app(GraphRepository::class)->invalidateCommunities($knowledgeBase->id);
+
+        app(CommunityBuildService::class)->rebuild($knowledgeBase);
+
+        $this->assertSame(3, $this->chatCallCount(), 'exactly one community should be re-summarized');
+        $this->assertSame(3, $knowledgeBase->graphCommunities()->count());
+        $titles = $knowledgeBase->graphCommunities()->pluck('title')->all();
+        foreach ($beforeTitles as $title) {
+            $this->assertContains($title, $titles);
+        }
+        $gamma = $knowledgeBase->graphEntities()->where('canonical_name', 'Gamma')->first();
+        $this->assertNotNull($gamma);
+        $gammaCommunityIds = DB::table('graph_community_members')->where('entity_id', $gamma->id)->pluck('community_id');
+        $this->assertSame(1, $gammaCommunityIds->count());
+    }
+
+    private function chatCallCount(): int
+    {
+        return collect(Http::recorded())
+            ->filter(fn ($pair) => str_ends_with($pair[0]->url(), '/chat/completions'))
+            ->count();
+    }
 }
