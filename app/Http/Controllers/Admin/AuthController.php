@@ -9,7 +9,10 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
-    public function create(): View { return view('admin.login'); }
+    public function create(): View
+    {
+        return view('admin.login');
+    }
 
     public function store(Request $request): RedirectResponse
     {
@@ -21,6 +24,7 @@ class AuthController extends Controller
         }
         $request->session()->regenerate();
         $request->session()->put('admin_authenticated', true);
+
         return redirect()->route('admin.dashboard');
     }
 
@@ -28,6 +32,7 @@ class AuthController extends Controller
     {
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect()->route('admin.login');
     }
 }
