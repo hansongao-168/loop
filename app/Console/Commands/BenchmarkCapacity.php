@@ -9,6 +9,7 @@ use App\Models\GraphRelationship;
 use App\Models\KnowledgeBase;
 use App\Services\CommunityDetectionService;
 use App\Services\KeywordRetrievalService;
+use App\Services\LocalGraphSearchService;
 use App\Services\RetrievalFusionService;
 use App\Support\CosineSimilarity;
 use Illuminate\Console\Command;
@@ -92,7 +93,7 @@ class BenchmarkCapacity extends Command
                 ], 20);
             });
 
-            $local = app(\App\Services\LocalGraphSearchService::class);
+            $local = app(LocalGraphSearchService::class);
 
             $rows[] = $this->measure('entity seed match + 2-hop expansion', $iterations, function () use ($local, $knowledgeBase) {
                 return $local->search($knowledgeBase, 'find Alpha-17 and Beta-42 relationships', 2);
